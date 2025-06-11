@@ -34,7 +34,7 @@ const PaymentSection = ({
         <CardTitle className="text-2xl text-gradient">Registration Payment</CardTitle>
         <p className="text-muted-foreground">Secure payment via mobile wallet</p>
       </CardHeader>
-      <CardContent className="space-y-6 bg-orange-800">
+      <CardContent className="space-y-6 bg-orange-800 rounded">
         <Alert>
           <Smartphone className="h-4 w-4" />
           <AlertDescription>
@@ -74,7 +74,7 @@ const PaymentSection = ({
 
         <div className="space-y-2">
           <Label htmlFor="phone">Mobile Number</Label>
-          <Input id="phone" type="tel" placeholder="03XX-XXXXXXX" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="text-center text-lg bg-green-500 " />
+          <Input id="phone" type="tel" placeholder="03XX-XXXXXXX" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="text-center text-lg bg-green-500 rounded-sm" />
         </div>
 
         <div className="bg-muted/50 p-4 rounded-lg space-y-2">
