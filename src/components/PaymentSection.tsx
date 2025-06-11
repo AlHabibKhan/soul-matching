@@ -32,7 +32,7 @@ const PaymentSection = ({
           <CreditCard className="w-8 h-8 text-white" />
         </div>
         <CardTitle className="text-2xl text-gradient">Registration Payment</CardTitle>
-        <p className="text-muted-foreground">Secure payment via mobile wallet</p>
+        <p className="text-amber-800">Secure payment via mobile wallet</p>
       </CardHeader>
       <CardContent className="space-y-6 bg-orange-800 rounded">
         <Alert>
