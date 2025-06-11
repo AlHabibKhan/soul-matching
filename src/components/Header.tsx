@@ -1,13 +1,16 @@
 
 import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
+  const navigate = useNavigate();
+
   return (
     <header className="bg-card border-b border-border sticky top-0 z-50 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-4">
         <nav className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
             <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center">
               <Users className="w-6 h-6 text-white" />
             </div>
@@ -30,7 +33,10 @@ const Header = () => {
             <Button variant="outline" className="hidden sm:inline-flex">
               Sign In
             </Button>
-            <Button className="gradient-primary border-0 hover:opacity-90 transition-opacity">
+            <Button 
+              className="gradient-primary border-0 hover:opacity-90 transition-opacity"
+              onClick={() => navigate('/register')}
+            >
               Get Started
             </Button>
           </div>

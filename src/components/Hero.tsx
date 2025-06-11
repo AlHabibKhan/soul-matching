@@ -2,8 +2,11 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative min-h-screen bg-gradient-to-br from-background via-muted/30 to-accent/5 flex items-center">
       <div className="container mx-auto px-4 py-20">
@@ -19,7 +22,11 @@ const Hero = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button size="lg" className="gradient-primary border-0 text-lg px-8 py-6 hover:opacity-90 transition-opacity">
+            <Button 
+              size="lg" 
+              className="gradient-primary border-0 text-lg px-8 py-6 hover:opacity-90 transition-opacity"
+              onClick={() => navigate('/register')}
+            >
               Start Your Journey - PKR 500
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8 py-6">
