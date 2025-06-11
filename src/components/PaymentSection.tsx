@@ -74,7 +74,7 @@ const PaymentSection = ({
 
         <div className="space-y-2">
           <Label htmlFor="phone">Mobile Number</Label>
-          <Input id="phone" type="tel" placeholder="03XX-XXXXXXX" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="text-center text-lg bg-green-500 rounded-sm" />
+          <Input id="phone" type="tel" placeholder="03XX-XXXXXXX" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="text-center text-lg bg-green-500 rounded-sm px-[9px]" />
         </div>
 
         <div className="bg-muted/50 p-4 rounded-lg space-y-2">
@@ -93,7 +93,7 @@ const PaymentSection = ({
           </div>
         </div>
 
-        <Button onClick={handlePayment} disabled={!phoneNumber || isProcessing} size="lg" className="w-full gradient-primary border-0 hover:opacity-90 transition-opacity font-normal text-slate-50">
+        <Button onClick={handlePayment} disabled={!phoneNumber || isProcessing} size="lg" className="w-full gradient-primary border-0 hover:opacity-90 transition-opacity font-normal text-slate-50 text-center bg-red-50">
           {isProcessing ? 'Processing Payment...' : `Pay PKR 500 via ${paymentMethod === 'jazzcash' ? 'JazzCash' : 'Easypaisa'}`}
         </Button>
 
