@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,16 +6,15 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CreditCard, Smartphone } from "lucide-react";
-
 interface PaymentSectionProps {
   onPaymentSuccess: (transactionId: string) => void;
 }
-
-const PaymentSection = ({ onPaymentSuccess }: PaymentSectionProps) => {
+const PaymentSection = ({
+  onPaymentSuccess
+}: PaymentSectionProps) => {
   const [paymentMethod, setPaymentMethod] = useState<'jazzcash' | 'easypaisa'>('jazzcash');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-
   const handlePayment = async () => {
     if (!phoneNumber) return;
     setIsProcessing(true);
@@ -28,9 +26,7 @@ const PaymentSection = ({ onPaymentSuccess }: PaymentSectionProps) => {
       onPaymentSuccess(mockTransactionId);
     }, 3000);
   };
-
-  return (
-    <Card className="max-w-2xl mx-auto bg-white shadow-lg">
+  return <Card className="max-w-2xl mx-auto bg-white shadow-lg">
       <CardHeader className="text-center bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
         <div className="w-16 h-16 gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
           <CreditCard className="w-8 h-8 text-white" />
@@ -48,10 +44,7 @@ const PaymentSection = ({ onPaymentSuccess }: PaymentSectionProps) => {
 
         <div className="space-y-4">
           <Label className="text-base font-medium text-gray-700">Select Payment Method</Label>
-          <RadioGroup 
-            value={paymentMethod} 
-            onValueChange={(value) => setPaymentMethod(value as 'jazzcash' | 'easypaisa')}
-          >
+          <RadioGroup value={paymentMethod} onValueChange={value => setPaymentMethod(value as 'jazzcash' | 'easypaisa')}>
             <div className="flex items-center space-x-2 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               <RadioGroupItem value="jazzcash" id="jazzcash" />
               <Label htmlFor="jazzcash" className="flex items-center space-x-3 cursor-pointer flex-1">
@@ -81,14 +74,7 @@ const PaymentSection = ({ onPaymentSuccess }: PaymentSectionProps) => {
 
         <div className="space-y-2">
           <Label htmlFor="phone" className="text-gray-700">Mobile Number</Label>
-          <Input 
-            id="phone" 
-            type="tel" 
-            placeholder="03XX-XXXXXXX" 
-            value={phoneNumber} 
-            onChange={(e) => setPhoneNumber(e.target.value)} 
-            className="text-center text-lg border-gray-300 focus:border-blue-500"
-          />
+          <Input id="phone" type="tel" placeholder="03XX-XXXXXXX" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="text-center text-lg border-gray-300 focus:border-blue-500 bg-slate-950" />
         </div>
 
         <div className="bg-gray-50 p-4 rounded-lg space-y-2 border">
@@ -107,21 +93,12 @@ const PaymentSection = ({ onPaymentSuccess }: PaymentSectionProps) => {
           </div>
         </div>
 
-        <Button 
-          onClick={handlePayment} 
-          disabled={!phoneNumber || isProcessing} 
-          size="lg" 
-          className="w-full gradient-primary border-0 hover:opacity-90 transition-opacity text-white"
-        >
-          {isProcessing ? 'Processing Payment...' : `Pay PKR 500 via ${paymentMethod === 'jazzcash' ? 'JazzCash' : 'Easypaisa'}`}
-        </Button>
+        
 
         <p className="text-xs text-gray-500 text-center">
           By proceeding, you agree to our Terms of Service and Privacy Policy. Your payment is secure and encrypted.
         </p>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default PaymentSection;
