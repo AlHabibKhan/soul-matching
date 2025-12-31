@@ -97,11 +97,11 @@ const Register = () => {
                 </div>
                 
                 <div className="bg-accent/10 p-4 rounded-lg border border-accent/20 text-left">
-                  <p className="font-semibold text-foreground mb-2">What's Next?</p>
+                  <p className="font-semibold text-foreground mb-2">What Happens Next?</p>
                   <ul className="text-sm text-muted-foreground space-y-2">
-                    <li>✓ Your profile will be verified within 24-48 hours</li>
-                    <li>✓ Browse matching profiles for FREE</li>
-                    <li>✓ To view contact details of matches, subscribe for <span className="font-bold text-primary">PKR 3,000/year</span></li>
+                    <li>✓ Our team will verify your documents within 24-48 hours</li>
+                    <li>✓ Once approved, explore and browse verified profiles — completely FREE</li>
+                    <li>✓ When you find someone special, subscribe for just <span className="font-bold text-primary">PKR 3,000/year</span> to unlock their contact details</li>
                   </ul>
                 </div>
                 
