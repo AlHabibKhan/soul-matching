@@ -27,10 +27,10 @@ const Hero = () => {
               className="gradient-primary border-0 text-lg px-8 py-6 hover:opacity-90 transition-opacity"
               onClick={() => navigate('/register')}
             >
-              Start Your Journey - PKR 500
+              Register Free Now
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 py-6">
-              Learn More
+            <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+              View Pricing
             </Button>
           </div>
           
