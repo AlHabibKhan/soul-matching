@@ -2,17 +2,16 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import PaymentSection from "@/components/PaymentSection";
+import IdentityVerification from "@/components/IdentityVerification";
 import ProfileForm from "@/components/ProfileForm";
 import Header from "@/components/Header";
-import { CheckCircle, CreditCard, User } from "lucide-react";
+import { CheckCircle, Shield, User } from "lucide-react";
 
 const Register = () => {
-  const [currentStep, setCurrentStep] = useState<'payment' | 'profile' | 'success'>('payment');
+  const [currentStep, setCurrentStep] = useState<'verification' | 'profile' | 'success'>('verification');
   const [registrationId, setRegistrationId] = useState<string>('');
 
-  const handlePaymentSuccess = (transactionId: string) => {
-    // Generate registration ID (will be handled by backend)
+  const handleVerificationComplete = () => {
     const regId = `PK-${Math.random().toString(36).substr(2, 3).toUpperCase()}-${Date.now().toString().slice(-4)}`;
     setRegistrationId(regId);
     setCurrentStep('profile');
@@ -23,10 +22,10 @@ const Register = () => {
   };
 
   const steps = [{
-    id: 'payment',
-    title: 'Payment',
-    icon: CreditCard,
-    completed: currentStep !== 'payment'
+    id: 'verification',
+    title: 'ID Verification',
+    icon: Shield,
+    completed: currentStep !== 'verification'
   }, {
     id: 'profile',
     title: 'Profile Creation',
@@ -40,7 +39,7 @@ const Register = () => {
   }];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-accent/5">
       <Header />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -52,19 +51,19 @@ const Register = () => {
                   step.completed 
                     ? 'bg-green-500 border-green-500 text-white' 
                     : currentStep === step.id 
-                      ? 'border-blue-500 text-blue-600 bg-blue-50' 
-                      : 'border-gray-300 text-gray-400 bg-white'
+                      ? 'border-primary text-primary bg-primary/10' 
+                      : 'border-muted-foreground/30 text-muted-foreground bg-card'
                 }`}>
                   <step.icon className="w-6 h-6" />
                 </div>
                 <span className={`ml-3 text-sm font-medium ${
-                  currentStep === step.id ? 'text-blue-600' : 'text-gray-600'
+                  currentStep === step.id ? 'text-primary' : 'text-muted-foreground'
                 }`}>
                   {step.title}
                 </span>
                 {index < steps.length - 1 && (
                   <div className={`w-16 h-0.5 mx-4 ${
-                    step.completed ? 'bg-green-500' : 'bg-gray-300'
+                    step.completed ? 'bg-green-500' : 'bg-muted-foreground/30'
                   }`} />
                 )}
               </div>
@@ -72,8 +71,8 @@ const Register = () => {
           </div>
 
           {/* Step Content */}
-          {currentStep === 'payment' && (
-            <PaymentSection onPaymentSuccess={handlePaymentSuccess} />
+          {currentStep === 'verification' && (
+            <IdentityVerification onVerificationComplete={handleVerificationComplete} />
           )}
 
           {currentStep === 'profile' && (
@@ -81,7 +80,7 @@ const Register = () => {
           )}
 
           {currentStep === 'success' && (
-            <Card className="max-w-2xl mx-auto text-center bg-white shadow-lg">
+            <Card className="max-w-2xl mx-auto text-center bg-card shadow-lg border-border">
               <CardHeader>
                 <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-8 h-8 text-white" />
@@ -89,15 +88,25 @@ const Register = () => {
                 <CardTitle className="text-2xl text-gradient">Registration Complete!</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-600">
+                <p className="text-muted-foreground">
                   Your profile has been successfully created and is under review.
                 </p>
-                <div className="bg-blue-50 p-4 rounded-lg border">
-                  <p className="text-sm font-medium text-gray-700">Your Registration ID:</p>
+                <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
+                  <p className="text-sm font-medium text-foreground">Your Registration ID:</p>
                   <p className="text-lg font-bold text-gradient">{registrationId}</p>
                 </div>
-                <p className="text-sm text-gray-500">
-                  Please save your registration ID for future reference. You will be notified once your profile is approved and matches are available.
+                
+                <div className="bg-accent/10 p-4 rounded-lg border border-accent/20 text-left">
+                  <p className="font-semibold text-foreground mb-2">What's Next?</p>
+                  <ul className="text-sm text-muted-foreground space-y-2">
+                    <li>✓ Your profile will be verified within 24-48 hours</li>
+                    <li>✓ Browse matching profiles for FREE</li>
+                    <li>✓ To view contact details of matches, subscribe for <span className="font-bold text-primary">PKR 3,000/year</span></li>
+                  </ul>
+                </div>
+                
+                <p className="text-sm text-muted-foreground">
+                  Please save your registration ID for future reference.
                 </p>
                 <Button 
                   className="gradient-primary border-0 hover:opacity-90 transition-opacity" 
