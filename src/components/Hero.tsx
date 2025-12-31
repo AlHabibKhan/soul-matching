@@ -17,8 +17,8 @@ const Hero = () => {
           </h1>
           
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-            A trusted digital matchmaking platform connecting hearts across Pakistan. 
-            Join thousands who found their soulmate through our secure, location-based matching system.
+            Pakistan's most trusted matrimonial platform. Register FREE with ID verification, 
+            browse verified profiles, and connect with your perfect match.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -27,10 +27,15 @@ const Hero = () => {
               className="gradient-primary border-0 text-lg px-8 py-6 hover:opacity-90 transition-opacity"
               onClick={() => navigate('/register')}
             >
-              Register Free Now
+              Start Free Registration
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
-              View Pricing
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="text-lg px-8 py-6 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+              onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              See How It Works
             </Button>
           </div>
           
@@ -38,15 +43,15 @@ const Hero = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div className="flex items-center justify-center space-x-2">
                 <Check className="w-5 h-5 text-success" />
-                <span>Secure & Verified</span>
+                <span>100% Free Registration</span>
               </div>
               <div className="flex items-center justify-center space-x-2">
                 <Check className="w-5 h-5 text-success" />
-                <span>Location-Based Matching</span>
+                <span>ID Verified Profiles Only</span>
               </div>
               <div className="flex items-center justify-center space-x-2">
                 <Check className="w-5 h-5 text-success" />
-                <span>Success-Based Donations</span>
+                <span>PKR 3,000/Year for Contact Access</span>
               </div>
             </div>
           </Card>

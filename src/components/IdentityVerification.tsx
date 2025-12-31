@@ -39,14 +39,14 @@ const IdentityVerification = ({ onVerificationComplete }: IdentityVerificationPr
         <div className="w-16 h-16 gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
           <Shield className="w-8 h-8 text-primary-foreground" />
         </div>
-        <CardTitle className="text-2xl text-gradient">Free Registration</CardTitle>
+        <CardTitle className="text-2xl text-gradient">Create Your Profile — It's FREE!</CardTitle>
         <p className="text-muted-foreground mt-2">
-          Verify your identity to create your profile for FREE
+          Complete identity verification to join our trusted community
         </p>
-        <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-700 font-medium">✓ Registration is completely FREE</p>
-          <p className="text-sm text-green-600 mt-1">
-            Pay only PKR 3,000/year when you want to view contact details of matches
+        <div className="mt-4 p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg">
+          <p className="text-green-700 dark:text-green-400 font-medium">✓ No registration fee — 100% FREE to join</p>
+          <p className="text-sm text-green-600 dark:text-green-500 mt-1">
+            Browse profiles free. Pay PKR 3,000/year only when ready to view contact details.
           </p>
         </div>
       </CardHeader>
