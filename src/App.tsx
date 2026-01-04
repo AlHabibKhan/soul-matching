@@ -7,14 +7,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Register from "./pages/Register";
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import CompleteProfile from "./pages/CompleteProfile";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const App = () => {
-  // Initialize QueryClient inside the component to avoid context issues
   const [queryClient] = React.useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 1000 * 60 * 5, // 5 minutes
+        staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
       },
     },
@@ -29,7 +32,10 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/register" element={<Register />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/complete-profile" element={<CompleteProfile />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

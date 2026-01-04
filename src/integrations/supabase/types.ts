@@ -14,16 +14,182 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      packages: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          price_pkr: number
+          proposals_count: number
+          validity_days: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          price_pkr: number
+          proposals_count: number
+          validity_days?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_pkr?: number
+          proposals_count?: number
+          validity_days?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          bio: string | null
+          city: string | null
+          created_at: string
+          date_of_birth: string | null
+          education: string | null
+          full_name: string
+          gender: string
+          id: string
+          id_document_url: string | null
+          is_approved: boolean
+          is_blocked: boolean
+          is_featured: boolean
+          is_verified: boolean
+          marital_status: string | null
+          phone: string | null
+          profession: string | null
+          profile_picture_url: string | null
+          selfie_url: string | null
+          updated_at: string
+          user_id: string
+          whatsapp: string | null
+        }
+        Insert: {
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          education?: string | null
+          full_name: string
+          gender: string
+          id?: string
+          id_document_url?: string | null
+          is_approved?: boolean
+          is_blocked?: boolean
+          is_featured?: boolean
+          is_verified?: boolean
+          marital_status?: string | null
+          phone?: string | null
+          profession?: string | null
+          profile_picture_url?: string | null
+          selfie_url?: string | null
+          updated_at?: string
+          user_id: string
+          whatsapp?: string | null
+        }
+        Update: {
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          education?: string | null
+          full_name?: string
+          gender?: string
+          id?: string
+          id_document_url?: string | null
+          is_approved?: boolean
+          is_blocked?: boolean
+          is_featured?: boolean
+          is_verified?: boolean
+          marital_status?: string | null
+          phone?: string | null
+          profession?: string | null
+          profile_picture_url?: string | null
+          selfie_url?: string | null
+          updated_at?: string
+          user_id?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      user_packages: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          package_id: string
+          payment_proof_url: string | null
+          payment_status: string
+          proposals_remaining: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          package_id: string
+          payment_proof_url?: string | null
+          payment_status?: string
+          proposals_remaining: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          package_id?: string
+          payment_proof_url?: string | null
+          payment_status?: string
+          proposals_remaining?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_packages_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +316,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
