@@ -29,6 +29,9 @@ interface Profile {
   bio?: string;
   requirements?: string;
   profile_picture_url?: string;
+}
+
+interface ContactInfo {
   phone?: string;
   whatsapp?: string;
 }
@@ -58,6 +61,7 @@ const Profiles = () => {
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [canViewContact, setCanViewContact] = useState(false);
+  const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -85,10 +89,10 @@ const Profiles = () => {
 
   const fetchProfiles = async (userId: string) => {
     // Fetch all approved profiles except current user
-    // Note: phone/whatsapp will be filtered on display based on proposal status
+    // SECURITY: phone/whatsapp are NOT fetched here to prevent data leakage
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, user_id, full_name, gender, date_of_birth, city, education, profession, marital_status, bio, requirements, profile_picture_url, phone, whatsapp")
+      .select("id, user_id, full_name, gender, date_of_birth, city, education, profession, marital_status, bio, requirements, profile_picture_url")
       .eq("is_approved", true)
       .eq("is_blocked", false)
       .neq("user_id", userId);
@@ -97,6 +101,20 @@ const Profiles = () => {
       setProfiles(data);
     }
     setLoading(false);
+  };
+
+  // Securely fetch contact info only when authorized (proposal accepted)
+  const fetchContactInfo = async (profileUserId: string) => {
+    const { data, error } = await supabase.rpc('get_contact_if_accepted', {
+      p_profile_user_id: profileUserId
+    });
+    
+    if (data && data.length > 0) {
+      setContactInfo(data[0]);
+      return true;
+    }
+    setContactInfo(null);
+    return false;
   };
 
   const fetchProposals = async (userId: string) => {
@@ -207,15 +225,28 @@ const Profiles = () => {
     fetchProposals(user.id);
     if (selectedProfile) {
       setCanViewContact(accept);
+      // Securely fetch contact info after acceptance
+      if (accept) {
+        await fetchContactInfo(senderId);
+      } else {
+        setContactInfo(null);
+      }
     }
   };
 
   const openProfileDetails = async (profile: Profile) => {
     setSelectedProfile(profile);
+    setContactInfo(null);
     
     // Check if contact is visible (proposal accepted)
     const proposalInfo = getProposalStatus(profile.user_id);
-    setCanViewContact(proposalInfo?.status === "accepted");
+    const isConnected = proposalInfo?.status === "accepted";
+    setCanViewContact(isConnected);
+    
+    // Fetch contact info securely via RPC if connected
+    if (isConnected) {
+      await fetchContactInfo(profile.user_id);
+    }
   };
 
   if (loading) {
@@ -427,23 +458,23 @@ const Profiles = () => {
                 )}
 
                 {/* Contact Information - Only visible after proposal acceptance */}
-                {canViewContact ? (
+                {canViewContact && contactInfo ? (
                   <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
                     <h4 className="font-semibold mb-2 text-green-600 flex items-center gap-2">
                       <Check className="w-4 h-4" />
                       Contact Information
                     </h4>
                     <div className="space-y-2">
-                      {selectedProfile.phone && (
+                      {contactInfo.phone && (
                         <div className="flex items-center gap-2 text-sm">
                           <Phone className="w-4 h-4" />
-                          <span>{selectedProfile.phone}</span>
+                          <span>{contactInfo.phone}</span>
                         </div>
                       )}
-                      {selectedProfile.whatsapp && (
+                      {contactInfo.whatsapp && (
                         <div className="flex items-center gap-2 text-sm">
                           <MessageCircle className="w-4 h-4" />
-                          <span>{selectedProfile.whatsapp}</span>
+                          <span>{contactInfo.whatsapp}</span>
                         </div>
                       )}
                     </div>

@@ -214,6 +214,13 @@ export type Database = {
         Args: { _profile_user_id: string; _viewer_id: string }
         Returns: boolean
       }
+      get_contact_if_accepted: {
+        Args: { p_profile_user_id: string }
+        Returns: {
+          phone: string
+          whatsapp: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
