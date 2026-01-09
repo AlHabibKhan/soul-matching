@@ -221,6 +221,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      send_proposal: {
+        Args: { p_receiver_id: string; p_sender_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "user"

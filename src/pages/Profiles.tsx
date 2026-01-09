@@ -133,54 +133,49 @@ const Profiles = () => {
       return;
     }
 
-    // Check if user has active package with proposals remaining
-    const { data: userPackage } = await supabase
-      .from("user_packages")
-      .select("id, proposals_remaining")
-      .eq("user_id", user.id)
-      .eq("payment_status", "approved")
-      .gt("expires_at", new Date().toISOString())
-      .gt("proposals_remaining", 0)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // Call atomic function to prevent race conditions
+    const { data, error } = await supabase.rpc('send_proposal', {
+      p_sender_id: user.id,
+      p_receiver_id: receiverId
+    });
 
-    if (!userPackage) {
-      toast({
-        title: "No Active Package",
-        description: "Please purchase a package to send proposals",
-        variant: "destructive",
-      });
-      navigate("/dashboard");
-      return;
-    }
-
-    // Send proposal
-    const { error: proposalError } = await supabase
-      .from("proposals")
-      .insert({
-        sender_id: user.id,
-        receiver_id: receiverId,
-      });
-
-    if (proposalError) {
+    if (error) {
       toast({
         title: "Error",
-        description: "Failed to send proposal. You may have already sent one.",
+        description: "Failed to send proposal. Please try again.",
         variant: "destructive",
       });
       return;
     }
 
-    // Decrement proposals remaining
-    await supabase
-      .from("user_packages")
-      .update({ proposals_remaining: userPackage.proposals_remaining - 1 })
-      .eq("id", userPackage.id);
+    // Type the response
+    const result = data as { success: boolean; error?: string; remaining?: number } | null;
+
+    if (!result?.success) {
+      const errorMessage = result?.error || "Failed to send proposal";
+      
+      // Navigate to dashboard if no active package
+      if (errorMessage.includes("No active package")) {
+        toast({
+          title: "No Active Package",
+          description: "Please purchase a package to send proposals",
+          variant: "destructive",
+        });
+        navigate("/dashboard");
+        return;
+      }
+
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return;
+    }
 
     toast({
       title: "Proposal Sent!",
-      description: "Your proposal has been sent successfully.",
+      description: `${result.remaining ?? 0} proposals remaining.`,
     });
 
     fetchProposals(user.id);
