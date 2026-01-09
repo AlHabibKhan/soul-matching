@@ -51,14 +51,10 @@ const Admin = () => {
       return;
     }
 
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", session.user.id)
-      .eq("role", "admin")
-      .single();
+    // Use server-side RPC function for admin verification
+    const { data: isAdminResult, error } = await supabase.rpc('is_admin');
 
-    if (!roleData) {
+    if (error || !isAdminResult) {
       toast({
         title: "Access Denied",
         description: "You don't have admin privileges",

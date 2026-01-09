@@ -221,6 +221,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin: { Args: never; Returns: boolean }
       send_proposal: {
         Args: { p_receiver_id: string; p_sender_id: string }
         Returns: Json
