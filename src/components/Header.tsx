@@ -32,13 +32,8 @@ const Header = () => {
   }, []);
 
   const checkAdminRole = async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .single();
-    
+    // Use server-side RPC function for consistent admin verification
+    const { data } = await supabase.rpc('is_admin');
     setIsAdmin(!!data);
   };
 

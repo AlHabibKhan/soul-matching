@@ -10,6 +10,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import { User, Save } from "lucide-react";
+import { z } from "zod";
+
+// Validation schema matching database constraints
+const profileSchema = z.object({
+  full_name: z.string().min(1, "Full name is required").max(200, "Full name must be less than 200 characters"),
+  gender: z.enum(["male", "female"], { required_error: "Gender is required" }),
+  city: z.string().min(1, "City is required").max(100, "City must be less than 100 characters"),
+  date_of_birth: z.string().optional().refine((val) => {
+    if (!val) return true;
+    const date = new Date(val);
+    const today = new Date();
+    const age = today.getFullYear() - date.getFullYear();
+    return age >= 18 && age <= 100;
+  }, "You must be between 18 and 100 years old"),
+  education: z.string().max(100).optional(),
+  profession: z.string().max(100, "Profession must be less than 100 characters").optional(),
+  marital_status: z.string().max(50).optional(),
+  phone: z.string().regex(/^(03[0-9]{2}-?[0-9]{7})?$/, "Phone format: 03XX-XXXXXXX").optional().or(z.literal("")),
+  whatsapp: z.string().regex(/^(03[0-9]{2}-?[0-9]{7})?$/, "WhatsApp format: 03XX-XXXXXXX").optional().or(z.literal("")),
+  bio: z.string().max(2000, "Bio must be less than 2000 characters").optional(),
+  requirements: z.string().max(2000, "Requirements must be less than 2000 characters").optional(),
+});
 
 const cities = [
   "Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad",
@@ -83,10 +105,13 @@ const CompleteProfile = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!profile.full_name || !profile.gender || !profile.city) {
+    // Client-side validation
+    const validationResult = profileSchema.safeParse(profile);
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
       toast({
-        title: "Missing Information",
-        description: "Please fill in required fields",
+        title: "Validation Error",
+        description: firstError.message,
         variant: "destructive",
       });
       return;
@@ -162,12 +187,13 @@ const CompleteProfile = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="full_name">Full Name *</Label>
+                    <Label htmlFor="full_name">Full Name * <span className="text-xs text-muted-foreground">(max 200 chars)</span></Label>
                     <Input
                       id="full_name"
                       value={profile.full_name}
                       onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
                       placeholder="Your full name"
+                      maxLength={200}
                     />
                   </div>
 
@@ -232,12 +258,13 @@ const CompleteProfile = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="profession">Profession</Label>
+                    <Label htmlFor="profession">Profession <span className="text-xs text-muted-foreground">(max 100 chars)</span></Label>
                     <Input
                       id="profession"
                       value={profile.profession}
                       onChange={(e) => setProfile({ ...profile, profession: e.target.value })}
                       placeholder="e.g., Doctor, Engineer"
+                      maxLength={100}
                     />
                   </div>
 
@@ -280,24 +307,26 @@ const CompleteProfile = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="bio">About Yourself</Label>
+                  <Label htmlFor="bio">About Yourself <span className="text-xs text-muted-foreground">({profile.bio?.length || 0}/2000)</span></Label>
                   <Textarea
                     id="bio"
                     value={profile.bio}
                     onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                     placeholder="Tell us about yourself, your interests, family background..."
                     rows={4}
+                    maxLength={2000}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="requirements">What You're Looking For</Label>
+                  <Label htmlFor="requirements">What You're Looking For <span className="text-xs text-muted-foreground">({profile.requirements?.length || 0}/2000)</span></Label>
                   <Textarea
                     id="requirements"
                     value={profile.requirements}
                     onChange={(e) => setProfile({ ...profile, requirements: e.target.value })}
                     placeholder="Describe your ideal partner, expectations, preferences..."
                     rows={4}
+                    maxLength={2000}
                   />
                 </div>
 
