@@ -63,6 +63,7 @@ export type Database = {
           phone: string | null
           profession: string | null
           profile_picture_url: string | null
+          requirements: string | null
           selfie_url: string | null
           updated_at: string
           user_id: string
@@ -86,6 +87,7 @@ export type Database = {
           phone?: string | null
           profession?: string | null
           profile_picture_url?: string | null
+          requirements?: string | null
           selfie_url?: string | null
           updated_at?: string
           user_id: string
@@ -109,10 +111,38 @@ export type Database = {
           phone?: string | null
           profession?: string | null
           profile_picture_url?: string | null
+          requirements?: string | null
           selfie_url?: string | null
           updated_at?: string
           user_id?: string
           whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      proposals: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -180,6 +210,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_view_contact: {
+        Args: { _profile_user_id: string; _viewer_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
