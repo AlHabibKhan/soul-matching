@@ -39,6 +39,7 @@ const CompleteProfile = () => {
     phone: "",
     whatsapp: "",
     bio: "",
+    requirements: "",
   });
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -70,6 +71,7 @@ const CompleteProfile = () => {
           phone: data.phone || "",
           whatsapp: data.whatsapp || "",
           bio: data.bio || "",
+          requirements: data.requirements || "",
         });
       }
       setLoading(false);
@@ -112,6 +114,7 @@ const CompleteProfile = () => {
         phone: profile.phone,
         whatsapp: profile.whatsapp,
         bio: profile.bio,
+        requirements: profile.requirements,
       })
       .eq("user_id", session.user.id);
 
@@ -282,7 +285,18 @@ const CompleteProfile = () => {
                     id="bio"
                     value={profile.bio}
                     onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                    placeholder="Tell us about yourself, your interests, and what you're looking for..."
+                    placeholder="Tell us about yourself, your interests, family background..."
+                    rows={4}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="requirements">What You're Looking For</Label>
+                  <Textarea
+                    id="requirements"
+                    value={profile.requirements}
+                    onChange={(e) => setProfile({ ...profile, requirements: e.target.value })}
+                    placeholder="Describe your ideal partner, expectations, preferences..."
                     rows={4}
                   />
                 </div>
