@@ -10,31 +10,49 @@ const Header = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        setTimeout(() => checkAdminRole(session.user.id), 0);
+        setTimeout(() => checkAdminRole(), 0);
       } else {
         setIsAdmin(false);
+        setPendingCount(0);
       }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdminRole(session.user.id);
+        checkAdminRole();
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAdminRole = async (userId: string) => {
+  const checkAdminRole = async () => {
     // Use server-side RPC function for consistent admin verification
     const { data } = await supabase.rpc('is_admin');
-    setIsAdmin(!!data);
+    const adminStatus = !!data;
+    setIsAdmin(adminStatus);
+    
+    // If admin, fetch pending profiles count
+    if (adminStatus) {
+      fetchPendingCount();
+    }
+  };
+
+  const fetchPendingCount = async () => {
+    const { count } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("is_approved", false)
+      .eq("is_blocked", false);
+    
+    setPendingCount(count ?? 0);
   };
 
   const handleLogout = async () => {
@@ -73,10 +91,15 @@ const Header = () => {
                     variant="outline" 
                     size="sm"
                     onClick={() => navigate('/admin')}
-                    className="hidden sm:inline-flex"
+                    className="hidden sm:inline-flex relative"
                   >
                     <Shield className="w-4 h-4 mr-1" />
                     Admin
+                    {pendingCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive rounded-full flex items-center justify-center text-[10px] text-destructive-foreground font-bold">
+                        {pendingCount > 9 ? '9+' : pendingCount}
+                      </span>
+                    )}
                   </Button>
                 )}
                 <Button 
