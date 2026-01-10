@@ -207,7 +207,69 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      safe_profiles: {
+        Row: {
+          bio: string | null
+          city: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          education: string | null
+          full_name: string | null
+          gender: string | null
+          id: string | null
+          is_approved: boolean | null
+          is_blocked: boolean | null
+          is_featured: boolean | null
+          is_verified: boolean | null
+          marital_status: string | null
+          profession: string | null
+          profile_picture_url: string | null
+          requirements: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          bio?: string | null
+          city?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          education?: string | null
+          full_name?: string | null
+          gender?: string | null
+          id?: string | null
+          is_approved?: boolean | null
+          is_blocked?: boolean | null
+          is_featured?: boolean | null
+          is_verified?: boolean | null
+          marital_status?: string | null
+          profession?: string | null
+          profile_picture_url?: string | null
+          requirements?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          bio?: string | null
+          city?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          education?: string | null
+          full_name?: string | null
+          gender?: string | null
+          id?: string | null
+          is_approved?: boolean | null
+          is_blocked?: boolean | null
+          is_featured?: boolean | null
+          is_verified?: boolean | null
+          marital_status?: string | null
+          profession?: string | null
+          profile_picture_url?: string | null
+          requirements?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_view_contact: {
@@ -219,6 +281,13 @@ export type Database = {
         Returns: {
           phone: string
           whatsapp: string
+        }[]
+      }
+      get_profile_verification_docs: {
+        Args: { p_user_id: string }
+        Returns: {
+          id_document_url: string
+          selfie_url: string
         }[]
       }
       has_role: {
