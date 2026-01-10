@@ -207,69 +207,7 @@ export type Database = {
       }
     }
     Views: {
-      safe_profiles: {
-        Row: {
-          bio: string | null
-          city: string | null
-          created_at: string | null
-          date_of_birth: string | null
-          education: string | null
-          full_name: string | null
-          gender: string | null
-          id: string | null
-          is_approved: boolean | null
-          is_blocked: boolean | null
-          is_featured: boolean | null
-          is_verified: boolean | null
-          marital_status: string | null
-          profession: string | null
-          profile_picture_url: string | null
-          requirements: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          bio?: string | null
-          city?: string | null
-          created_at?: string | null
-          date_of_birth?: string | null
-          education?: string | null
-          full_name?: string | null
-          gender?: string | null
-          id?: string | null
-          is_approved?: boolean | null
-          is_blocked?: boolean | null
-          is_featured?: boolean | null
-          is_verified?: boolean | null
-          marital_status?: string | null
-          profession?: string | null
-          profile_picture_url?: string | null
-          requirements?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          bio?: string | null
-          city?: string | null
-          created_at?: string | null
-          date_of_birth?: string | null
-          education?: string | null
-          full_name?: string | null
-          gender?: string | null
-          id?: string | null
-          is_approved?: boolean | null
-          is_blocked?: boolean | null
-          is_featured?: boolean | null
-          is_verified?: boolean | null
-          marital_status?: string | null
-          profession?: string | null
-          profile_picture_url?: string | null
-          requirements?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       can_view_contact: {
@@ -288,6 +226,29 @@ export type Database = {
         Returns: {
           id_document_url: string
           selfie_url: string
+        }[]
+      }
+      get_safe_profiles: {
+        Args: never
+        Returns: {
+          bio: string
+          city: string
+          created_at: string
+          date_of_birth: string
+          education: string
+          full_name: string
+          gender: string
+          id: string
+          is_approved: boolean
+          is_blocked: boolean
+          is_featured: boolean
+          is_verified: boolean
+          marital_status: string
+          profession: string
+          profile_picture_url: string
+          requirements: string
+          updated_at: string
+          user_id: string
         }[]
       }
       has_role: {
