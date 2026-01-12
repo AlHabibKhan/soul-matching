@@ -119,6 +119,27 @@ export type Database = {
         }
         Relationships: []
       }
+      proposal_rate_limits: {
+        Row: {
+          last_proposal_at: string
+          proposals_in_window: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          last_proposal_at?: string
+          proposals_in_window?: number
+          user_id: string
+          window_start?: string
+        }
+        Update: {
+          last_proposal_at?: string
+          proposals_in_window?: number
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       proposals: {
         Row: {
           created_at: string
