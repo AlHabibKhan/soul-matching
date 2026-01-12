@@ -1,34 +1,155 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, Upload, Camera, CheckCircle, FileText } from "lucide-react";
+import { Shield, Upload, Camera, CheckCircle, FileText, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface IdentityVerificationProps {
   onVerificationComplete: () => void;
 }
+
+// File validation constants
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 const IdentityVerification = ({ onVerificationComplete }: IdentityVerificationProps) => {
   const [idType, setIdType] = useState<string>('');
   const [idDocument, setIdDocument] = useState<File | null>(null);
   const [livePicture, setLivePicture] = useState<File | null>(null);
   const [stillPicture, setStillPicture] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const { toast } = useToast();
+
+  const validateFile = (file: File): string | null => {
+    if (file.size > MAX_FILE_SIZE) {
+      return "File too large. Maximum size is 5MB.";
+    }
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      return "Invalid file type. Please upload JPEG, PNG, or WebP.";
+    }
+    return null;
+  };
 
   const handleFileChange = (setter: React.Dispatch<React.SetStateAction<File | null>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setter(e.target.files[0]);
+      const file = e.target.files[0];
+      const error = validateFile(file);
+      if (error) {
+        toast({
+          title: "Invalid File",
+          description: error,
+          variant: "destructive",
+        });
+        return;
+      }
+      setter(file);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (idType && idDocument && livePicture && stillPicture) {
-      console.log('Verification documents submitted:', { idType, idDocument, livePicture, stillPicture });
-      onVerificationComplete();
+  const uploadFile = async (file: File, bucket: string, userId: string, prefix: string): Promise<string | null> => {
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const filePath = `${userId}/${Date.now()}_${prefix}.${fileExt}`;
+    
+    const { error } = await supabase.storage
+      .from(bucket)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error) {
+      console.error(`Failed to upload ${prefix}:`, error);
+      return null;
     }
+
+    return filePath;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!idType || !idDocument || !livePicture || !stillPicture) {
+      toast({
+        title: "Missing Information",
+        description: "Please complete all fields before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to continue.",
+          variant: "destructive",
+        });
+        setUploading(false);
+        return;
+      }
+
+      // Upload all files
+      const [idDocPath, selfiePath, profilePicPath] = await Promise.all([
+        uploadFile(idDocument, 'id-documents', user.id, 'id_document'),
+        uploadFile(livePicture, 'id-documents', user.id, 'selfie'),
+        uploadFile(stillPicture, 'profile-pictures', user.id, 'profile_picture'),
+      ]);
+
+      if (!idDocPath || !selfiePath || !profilePicPath) {
+        toast({
+          title: "Upload Failed",
+          description: "Some files failed to upload. Please try again.",
+          variant: "destructive",
+        });
+        setUploading(false);
+        return;
+      }
+
+      // Update profile with file URLs
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          id_document_url: idDocPath,
+          selfie_url: selfiePath,
+          profile_picture_url: `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/profile-pictures/${profilePicPath}`,
+        })
+        .eq('user_id', user.id);
+
+      if (updateError) {
+        console.error('Profile update error:', updateError);
+        toast({
+          title: "Error",
+          description: "Failed to save verification documents. Please try again.",
+          variant: "destructive",
+        });
+        setUploading(false);
+        return;
+      }
+
+      toast({
+        title: "Verification Submitted!",
+        description: "Your documents are being reviewed.",
+      });
+      
+      onVerificationComplete();
+    } catch (err) {
+      console.error('Verification error:', err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
+
+    setUploading(false);
   };
 
   const isFormValid = idType && idDocument && livePicture && stillPicture;
@@ -79,7 +200,7 @@ const IdentityVerification = ({ onVerificationComplete }: IdentityVerificationPr
             <div className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary transition-colors">
               <Input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={handleFileChange(setIdDocument)}
                 className="hidden"
                 id="id-document"
@@ -94,7 +215,7 @@ const IdentityVerification = ({ onVerificationComplete }: IdentityVerificationPr
                   <div className="text-muted-foreground">
                     <Upload className="w-8 h-8 mx-auto mb-2" />
                     <p>Click to upload your ID document</p>
-                    <p className="text-xs mt-1">Clear photo of front side</p>
+                    <p className="text-xs mt-1">JPEG, PNG, or WebP (max 5MB)</p>
                   </div>
                 )}
               </label>
@@ -110,7 +231,7 @@ const IdentityVerification = ({ onVerificationComplete }: IdentityVerificationPr
             <div className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary transition-colors">
               <Input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 capture="user"
                 onChange={handleFileChange(setLivePicture)}
                 className="hidden"
@@ -142,7 +263,7 @@ const IdentityVerification = ({ onVerificationComplete }: IdentityVerificationPr
             <div className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary transition-colors">
               <Input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={handleFileChange(setStillPicture)}
                 className="hidden"
                 id="still-picture"
@@ -157,7 +278,7 @@ const IdentityVerification = ({ onVerificationComplete }: IdentityVerificationPr
                   <div className="text-muted-foreground">
                     <Upload className="w-8 h-8 mx-auto mb-2" />
                     <p>Upload a clear photo</p>
-                    <p className="text-xs mt-1">This will be shown on your profile</p>
+                    <p className="text-xs mt-1">JPEG, PNG, or WebP (max 5MB)</p>
                   </div>
                 )}
               </label>
@@ -176,11 +297,18 @@ const IdentityVerification = ({ onVerificationComplete }: IdentityVerificationPr
 
           <Button
             type="submit"
-            disabled={!isFormValid}
+            disabled={!isFormValid || uploading}
             className="w-full gradient-primary border-0 hover:opacity-90 transition-opacity"
             size="lg"
           >
-            Verify & Continue (Free)
+            {uploading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              "Verify & Continue (Free)"
+            )}
           </Button>
         </form>
       </CardContent>

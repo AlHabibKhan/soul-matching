@@ -47,10 +47,10 @@ const Auth = () => {
       return;
     }
 
-    if (password.length < 6) {
+    if (password.length < 10) {
       toast({
         title: "Weak Password",
-        description: "Password must be at least 6 characters",
+        description: "Password must be at least 10 characters",
         variant: "destructive",
       });
       return;
@@ -229,7 +229,7 @@ const Auth = () => {
                         <Input
                           id="signup-password"
                           type="password"
-                          placeholder="At least 6 characters"
+                          placeholder="At least 10 characters"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           className="pl-10"
