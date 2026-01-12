@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import PackagesSection from "@/components/PackagesSection";
-import { User, Package, Heart, Settings, LogOut, AlertCircle, CheckCircle } from "lucide-react";
+import { User, Package, Heart, Settings, LogOut, AlertCircle, CheckCircle, ShieldCheck, ShieldX } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface Profile {
@@ -111,9 +112,22 @@ const Dashboard = () => {
           {/* Welcome Section */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gradient">
-                Welcome, {profile?.full_name || "User"}!
-              </h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold text-gradient">
+                  Welcome, {profile?.full_name || "User"}!
+                </h1>
+                {profile?.is_verified ? (
+                  <Badge className="bg-green-500/10 text-green-600 border-green-500/30 hover:bg-green-500/20">
+                    <ShieldCheck className="w-3 h-3 mr-1" />
+                    ID Verified
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-muted-foreground border-muted-foreground/30">
+                    <ShieldX className="w-3 h-3 mr-1" />
+                    Not Verified
+                  </Badge>
+                )}
+              </div>
               <p className="text-muted-foreground mt-1">
                 Manage your profile and packages
               </p>
@@ -198,12 +212,12 @@ const Dashboard = () => {
           </div>
 
           {/* Packages Section */}
-          {!userPackage && (
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-foreground mb-4">Choose a Package</h2>
-              <PackagesSection userId={user?.id || ""} onPurchase={() => fetchUserPackage(user?.id || "")} />
-            </div>
-          )}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-4">
+              {userPackage ? "Upgrade Your Package" : "Choose a Package"}
+            </h2>
+            <PackagesSection userId={user?.id || ""} onPurchase={() => fetchUserPackage(user?.id || "")} />
+          </div>
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
