@@ -1,11 +1,39 @@
-
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Hero = () => {
   const navigate = useNavigate();
+  const [hasProfile, setHasProfile] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkUserProfile = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("user_id", session.user.id)
+          .single();
+        
+        setHasProfile(!!profile);
+      }
+      setLoading(false);
+    };
+
+    checkUserProfile();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkUserProfile();
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <section className="relative min-h-screen bg-gradient-to-br from-background via-muted/30 to-accent/5 flex items-center">
@@ -22,13 +50,26 @@ const Hero = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button 
-              size="lg" 
-              className="gradient-primary border-0 text-lg px-8 py-6 hover:opacity-90 transition-opacity"
-              onClick={() => navigate('/register')}
-            >
-              Start Free Registration
-            </Button>
+            {!loading && (
+              hasProfile ? (
+                <Button 
+                  size="lg" 
+                  className="gradient-primary border-0 text-lg px-8 py-6 hover:opacity-90 transition-opacity"
+                  onClick={() => navigate('/dashboard')}
+                >
+                  <Search className="w-5 h-5 mr-2" />
+                  Track Verification Status
+                </Button>
+              ) : (
+                <Button 
+                  size="lg" 
+                  className="gradient-primary border-0 text-lg px-8 py-6 hover:opacity-90 transition-opacity"
+                  onClick={() => navigate('/register')}
+                >
+                  Start Free Registration
+                </Button>
+              )
+            )}
             <Button 
               size="lg" 
               variant="outline" 
