@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
+import PackagesSection from "@/components/PackagesSection";
 import { User, MapPin, GraduationCap, Briefcase, Heart, Calendar, Phone, MessageCircle, Send, Check, X } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import {
@@ -43,6 +44,11 @@ interface Proposal {
   status: string;
 }
 
+interface UserPackage {
+  id: string;
+  proposals_remaining: number;
+}
+
 const calculateAge = (dateOfBirth: string): number => {
   const today = new Date();
   const birthDate = new Date(dateOfBirth);
@@ -58,8 +64,10 @@ const Profiles = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [userPackage, setUserPackage] = useState<UserPackage | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const [showPricingDialog, setShowPricingDialog] = useState(false);
   const [canViewContact, setCanViewContact] = useState(false);
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const navigate = useNavigate();
@@ -71,6 +79,7 @@ const Profiles = () => {
       if (session?.user) {
         fetchProfiles(session.user.id);
         fetchProposals(session.user.id);
+        fetchUserPackage(session.user.id);
       }
     });
 
@@ -79,6 +88,7 @@ const Profiles = () => {
         setUser(session.user);
         fetchProfiles(session.user.id);
         fetchProposals(session.user.id);
+        fetchUserPackage(session.user.id);
       } else {
         setLoading(false);
       }
@@ -86,6 +96,21 @@ const Profiles = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserPackage = async (userId: string) => {
+    const { data } = await supabase
+      .from("user_packages")
+      .select("id, proposals_remaining")
+      .eq("user_id", userId)
+      .eq("payment_status", "approved")
+      .gt("expires_at", new Date().toISOString())
+      .gt("proposals_remaining", 0)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    setUserPackage(data);
+  };
 
   const fetchProfiles = async (userId: string) => {
     // Fetch all approved profiles except current user
@@ -151,6 +176,12 @@ const Profiles = () => {
       return;
     }
 
+    // Check if user has active package before calling RPC
+    if (!userPackage) {
+      setShowPricingDialog(true);
+      return;
+    }
+
     // Call atomic function to prevent race conditions
     const { data, error } = await supabase.rpc('send_proposal', {
       p_sender_id: user.id,
@@ -172,14 +203,9 @@ const Profiles = () => {
     if (!result?.success) {
       const errorMessage = result?.error || "Failed to send proposal";
       
-      // Navigate to dashboard if no active package
+      // Show pricing dialog if no active package
       if (errorMessage.includes("No active package")) {
-        toast({
-          title: "No Active Package",
-          description: "Please purchase a package to send proposals",
-          variant: "destructive",
-        });
-        navigate("/dashboard");
+        setShowPricingDialog(true);
         return;
       }
 
@@ -557,8 +583,34 @@ const Profiles = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Pricing Dialog */}
+      <Dialog open={showPricingDialog} onOpenChange={setShowPricingDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-gradient">Purchase a Package</DialogTitle>
+            <DialogDescription>
+              You need an active package to send proposals. Choose a package below to get started.
+            </DialogDescription>
+          </DialogHeader>
+          <PackagesSection 
+            userId={user?.id || ""} 
+            onPurchase={() => {
+              setShowPricingDialog(false);
+              if (user) {
+                fetchUserPackage(user.id);
+              }
+              toast({
+                title: "Package Purchased!",
+                description: "Your payment is under review. You can send proposals once approved.",
+              });
+            }} 
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 export default Profiles;
+

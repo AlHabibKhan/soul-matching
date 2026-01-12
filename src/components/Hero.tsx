@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Check, Search } from "lucide-react";
+import { Check, Search, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
+interface Profile {
+  id: string;
+  is_verified: boolean;
+}
+
 const Hero = () => {
   const navigate = useNavigate();
-  const [hasProfile, setHasProfile] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,13 +20,13 @@ const Hero = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user) {
-        const { data: profile } = await supabase
+        const { data } = await supabase
           .from("profiles")
-          .select("id")
+          .select("id, is_verified")
           .eq("user_id", session.user.id)
-          .single();
+          .maybeSingle();
         
-        setHasProfile(!!profile);
+        setProfile(data);
       }
       setLoading(false);
     };
@@ -34,6 +39,49 @@ const Hero = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const renderPrimaryButton = () => {
+    if (loading) return null;
+
+    // No profile - show registration
+    if (!profile) {
+      return (
+        <Button 
+          size="lg" 
+          className="gradient-primary border-0 text-lg px-8 py-6 hover:opacity-90 transition-opacity"
+          onClick={() => navigate('/register')}
+        >
+          Start Free Registration
+        </Button>
+      );
+    }
+
+    // Has profile and verified - show browse profiles
+    if (profile.is_verified) {
+      return (
+        <Button 
+          size="lg" 
+          className="gradient-primary border-0 text-lg px-8 py-6 hover:opacity-90 transition-opacity"
+          onClick={() => navigate('/profiles')}
+        >
+          <Users className="w-5 h-5 mr-2" />
+          Browse Proposals
+        </Button>
+      );
+    }
+
+    // Has profile but not verified - show track verification
+    return (
+      <Button 
+        size="lg" 
+        className="gradient-primary border-0 text-lg px-8 py-6 hover:opacity-90 transition-opacity"
+        onClick={() => navigate('/dashboard')}
+      >
+        <Search className="w-5 h-5 mr-2" />
+        Track Verification Status
+      </Button>
+    );
+  };
 
   return (
     <section className="relative min-h-screen bg-gradient-to-br from-background via-muted/30 to-accent/5 flex items-center">
@@ -50,26 +98,7 @@ const Hero = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            {!loading && (
-              hasProfile ? (
-                <Button 
-                  size="lg" 
-                  className="gradient-primary border-0 text-lg px-8 py-6 hover:opacity-90 transition-opacity"
-                  onClick={() => navigate('/dashboard')}
-                >
-                  <Search className="w-5 h-5 mr-2" />
-                  Track Verification Status
-                </Button>
-              ) : (
-                <Button 
-                  size="lg" 
-                  className="gradient-primary border-0 text-lg px-8 py-6 hover:opacity-90 transition-opacity"
-                  onClick={() => navigate('/register')}
-                >
-                  Start Free Registration
-                </Button>
-              )
-            )}
+            {renderPrimaryButton()}
             <Button 
               size="lg" 
               variant="outline" 
