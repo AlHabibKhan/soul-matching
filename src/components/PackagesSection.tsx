@@ -21,6 +21,10 @@ interface PackagesSectionProps {
   onPurchase: () => void;
 }
 
+// File validation constants
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+
 const PackagesSection = ({ userId, onPurchase }: PackagesSectionProps) => {
   const [packages, setPackages] = useState<Package[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
@@ -50,49 +54,104 @@ const PackagesSection = ({ userId, onPurchase }: PackagesSectionProps) => {
     setShowPaymentDialog(true);
   };
 
+  const validateFile = (file: File): string | null => {
+    if (file.size > MAX_FILE_SIZE) {
+      return "File too large. Maximum size is 5MB.";
+    }
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      return "Invalid file type. Please upload JPEG, PNG, WebP, or PDF.";
+    }
+    return null;
+  };
+
   const handleSubmitPayment = async () => {
     if (!selectedPackage || !userId) return;
 
-    setUploading(true);
-
-    let paymentProofUrl = null;
-
-    // If payment proof file is provided, we would upload it to storage
-    // For now, we just note that payment proof was provided
-    if (paymentProof) {
-      paymentProofUrl = `payment_proof_${userId}_${Date.now()}.${paymentProof.name.split('.').pop()}`;
-    }
-
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + selectedPackage.validity_days);
-
-    const { error } = await supabase.from("user_packages").insert({
-      user_id: userId,
-      package_id: selectedPackage.id,
-      proposals_remaining: selectedPackage.proposals_count,
-      payment_proof_url: paymentProofUrl,
-      payment_status: "pending",
-      expires_at: expiresAt.toISOString(),
-    });
-
-    setUploading(false);
-
-    if (error) {
+    // Validate payment proof is required
+    if (!paymentProof) {
       toast({
-        title: "Error",
-        description: "Failed to submit payment. Please try again.",
+        title: "Missing Payment Proof",
+        description: "Please upload your payment receipt.",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Payment Submitted!",
-        description: "Your payment is under review. You'll be notified once approved.",
-      });
-      setShowPaymentDialog(false);
-      setSelectedPackage(null);
-      setPaymentProof(null);
-      onPurchase();
+      return;
     }
+
+    // Validate file
+    const validationError = validateFile(paymentProof);
+    if (validationError) {
+      toast({
+        title: "Invalid File",
+        description: validationError,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      // Upload file to storage with user's folder structure
+      const fileExt = paymentProof.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const filePath = `${userId}/${Date.now()}_payment_proof.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('payment-proofs')
+        .upload(filePath, paymentProof, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        toast({
+          title: "Upload Failed",
+          description: uploadError.message,
+          variant: "destructive",
+        });
+        setUploading(false);
+        return;
+      }
+
+      // Get the storage path for database reference
+      const paymentProofUrl = filePath;
+
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + selectedPackage.validity_days);
+
+      const { error } = await supabase.from("user_packages").insert({
+        user_id: userId,
+        package_id: selectedPackage.id,
+        proposals_remaining: selectedPackage.proposals_count,
+        payment_proof_url: paymentProofUrl,
+        payment_status: "pending",
+        expires_at: expiresAt.toISOString(),
+      });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to submit payment. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Payment Submitted!",
+          description: "Your payment is under review. You'll be notified once approved.",
+        });
+        setShowPaymentDialog(false);
+        setSelectedPackage(null);
+        setPaymentProof(null);
+        onPurchase();
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
+
+    setUploading(false);
   };
 
   const features = [
@@ -191,12 +250,12 @@ const PackagesSection = ({ userId, onPurchase }: PackagesSectionProps) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="payment-proof">Upload Payment Proof</Label>
+                <Label htmlFor="payment-proof">Upload Payment Proof *</Label>
                 <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
                   <Input
                     id="payment-proof"
                     type="file"
-                    accept="image/*,.pdf"
+                    accept="image/jpeg,image/png,image/webp,application/pdf"
                     className="hidden"
                     onChange={(e) => setPaymentProof(e.target.files?.[0] || null)}
                   />
@@ -210,6 +269,7 @@ const PackagesSection = ({ userId, onPurchase }: PackagesSectionProps) => {
                       <div className="flex flex-col items-center text-muted-foreground">
                         <Upload className="w-8 h-8 mb-2" />
                         <span>Click to upload receipt</span>
+                        <span className="text-xs mt-1">JPEG, PNG, WebP, or PDF (max 5MB)</span>
                       </div>
                     )}
                   </label>
@@ -224,9 +284,9 @@ const PackagesSection = ({ userId, onPurchase }: PackagesSectionProps) => {
               <Button
                 className="w-full gradient-primary border-0"
                 onClick={handleSubmitPayment}
-                disabled={uploading}
+                disabled={uploading || !paymentProof}
               >
-                {uploading ? "Submitting..." : "Submit Payment"}
+                {uploading ? "Uploading..." : "Submit Payment"}
               </Button>
             </div>
           )}
