@@ -46,6 +46,10 @@ const Dashboard = () => {
       setUser(session?.user ?? null);
       if (!session?.user) {
         navigate("/auth");
+      } else {
+        // Refetch profile on auth state change
+        fetchProfile(session.user.id);
+        fetchUserPackage(session.user.id);
       }
     });
 
@@ -61,6 +65,19 @@ const Dashboard = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // Refetch profile when page becomes visible (e.g., after admin approval)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && user?.id) {
+        fetchProfile(user.id);
+        fetchUserPackage(user.id);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user?.id]);
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
