@@ -211,30 +211,52 @@ const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Packages Section */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-foreground mb-4">
-              {userPackage ? "Upgrade Your Package" : "Choose a Package"}
-            </h2>
-            <PackagesSection userId={user?.id || ""} onPurchase={() => fetchUserPackage(user?.id || "")} />
-          </div>
+          {/* Packages Section - Only show when approved */}
+          {profile?.is_approved && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-foreground mb-4">
+                {userPackage ? "Upgrade Your Package" : "Choose a Package"}
+              </h2>
+              <PackagesSection userId={user?.id || ""} onPurchase={() => fetchUserPackage(user?.id || "")} />
+            </div>
+          )}
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer"
-                  onClick={() => navigate("/profiles")}>
+          {/* Pending Approval Notice */}
+          {!profile?.is_approved && (
+            <Card className="mb-8 border-yellow-500/30 bg-yellow-500/5">
               <CardContent className="pt-6">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 gradient-primary rounded-full flex items-center justify-center">
-                    <Heart className="w-6 h-6 text-white" />
-                  </div>
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="w-6 h-6 text-yellow-500" />
                   <div>
-                    <h3 className="font-semibold text-foreground">Browse Profiles</h3>
-                    <p className="text-sm text-muted-foreground">Find your perfect match</p>
+                    <h3 className="font-semibold text-foreground">Profile Pending Approval</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Your profile is being reviewed. Packages and proposals will be available once approved.
+                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Browse Profiles - Only show when approved */}
+            {profile?.is_approved && (
+              <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer"
+                    onClick={() => navigate("/profiles")}>
+                <CardContent className="pt-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 gradient-primary rounded-full flex items-center justify-center">
+                      <Heart className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">Browse Profiles</h3>
+                      <p className="text-sm text-muted-foreground">Find your perfect match</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer"
                   onClick={() => navigate("/complete-profile")}>
