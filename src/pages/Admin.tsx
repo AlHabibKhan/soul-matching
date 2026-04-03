@@ -516,7 +516,7 @@ const Admin = () => {
                                     <Button variant="ghost" size="sm" className="p-1">
                                       <div className="flex items-center gap-2">
                                         <img 
-                                          src={getPaymentProofUrl(pkg.payment_proof_url) || ''} 
+                                          src={signedUrls[pkg.id] || ''} 
                                           alt="Payment proof"
                                           className="w-10 h-10 object-cover rounded border"
                                           onError={(e) => {
