@@ -529,7 +529,7 @@ const Admin = () => {
                                   </DialogTrigger>
                                   <DialogContent className="max-w-2xl">
                                     <img 
-                                      src={getPaymentProofUrl(pkg.payment_proof_url) || ''} 
+                                      src={signedUrls[pkg.id] || ''} 
                                       alt="Payment proof full"
                                       className="w-full h-auto rounded"
                                     />
