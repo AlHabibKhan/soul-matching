@@ -49,6 +49,7 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [userPackages, setUserPackages] = useState<UserPackage[]>([]);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -112,6 +113,19 @@ const Admin = () => {
 
     if (data) {
       setUserPackages(data as unknown as UserPackage[]);
+      // Resolve signed URLs for payment proofs
+      const urls: Record<string, string> = {};
+      await Promise.all(
+        data.filter((pkg: any) => pkg.payment_proof_url).map(async (pkg: any) => {
+          const { data: urlData } = await supabase.storage
+            .from("payment-proofs")
+            .createSignedUrl(pkg.payment_proof_url, 3600);
+          if (urlData?.signedUrl) {
+            urls[pkg.id] = urlData.signedUrl;
+          }
+        })
+      );
+      setSignedUrls(urls);
     }
   };
 
@@ -232,11 +246,7 @@ const Admin = () => {
     await fetchUserPackages();
   };
 
-  const getPaymentProofUrl = (path: string | undefined) => {
-    if (!path) return null;
-    const { data } = supabase.storage.from("payment-proofs").getPublicUrl(path);
-    return data?.publicUrl;
-  };
+
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -500,7 +510,7 @@ const Admin = () => {
                                     <Button variant="ghost" size="sm" className="p-1">
                                       <div className="flex items-center gap-2">
                                         <img 
-                                          src={getPaymentProofUrl(pkg.payment_proof_url) || ''} 
+                                          src={signedUrls[pkg.id] || ''} 
                                           alt="Payment proof"
                                           className="w-10 h-10 object-cover rounded border"
                                           onError={(e) => {
@@ -513,7 +523,7 @@ const Admin = () => {
                                   </DialogTrigger>
                                   <DialogContent className="max-w-2xl">
                                     <img 
-                                      src={getPaymentProofUrl(pkg.payment_proof_url) || ''} 
+                                      src={signedUrls[pkg.id] || ''} 
                                       alt="Payment proof full"
                                       className="w-full h-auto rounded"
                                     />

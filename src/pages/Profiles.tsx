@@ -113,17 +113,16 @@ const Profiles = () => {
   };
 
   const fetchProfiles = async (userId: string) => {
-    // Fetch all approved profiles except current user
-    // SECURITY: phone/whatsapp are NOT fetched here to prevent data leakage
+    // SECURITY: Use get_safe_profiles RPC to prevent sensitive data leakage
+    // This server-side function only returns non-sensitive fields
     const { data, error } = await supabase
-      .from("profiles")
-      .select("id, user_id, full_name, gender, date_of_birth, city, education, profession, marital_status, bio, requirements, profile_picture_url")
-      .eq("is_approved", true)
-      .eq("is_blocked", false)
-      .neq("user_id", userId);
+      .rpc("get_safe_profiles") as { data: Profile[] | null; error: any };
+    
+    // Filter out current user client-side
+    const filtered = data?.filter(p => p.user_id !== userId) || [];
 
-    if (data) {
-      setProfiles(data);
+    if (filtered.length > 0) {
+      setProfiles(filtered);
     }
     setLoading(false);
   };
