@@ -246,13 +246,7 @@ const Admin = () => {
     await fetchUserPackages();
   };
 
-  const getPaymentProofUrl = async (path: string | undefined) => {
-    if (!path) return null;
-    const { data, error } = await supabase.storage
-      .from("payment-proofs")
-      .createSignedUrl(path, 3600); // 1 hour expiration
-    return error ? null : data?.signedUrl;
-  };
+
 
   const getStatusBadge = (status: string) => {
     switch (status) {
