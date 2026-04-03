@@ -232,10 +232,12 @@ const Admin = () => {
     await fetchUserPackages();
   };
 
-  const getPaymentProofUrl = (path: string | undefined) => {
+  const getPaymentProofUrl = async (path: string | undefined) => {
     if (!path) return null;
-    const { data } = supabase.storage.from("payment-proofs").getPublicUrl(path);
-    return data?.publicUrl;
+    const { data, error } = await supabase.storage
+      .from("payment-proofs")
+      .createSignedUrl(path, 3600); // 1 hour expiration
+    return error ? null : data?.signedUrl;
   };
 
   const getStatusBadge = (status: string) => {
