@@ -121,8 +121,8 @@ const Profiles = () => {
     // Filter out current user client-side
     const filtered = data?.filter(p => p.user_id !== userId) || [];
 
-    if (data) {
-      setProfiles(data);
+    if (filtered.length > 0) {
+      setProfiles(filtered);
     }
     setLoading(false);
   };

@@ -49,6 +49,7 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [userPackages, setUserPackages] = useState<UserPackage[]>([]);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
