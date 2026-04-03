@@ -113,6 +113,19 @@ const Admin = () => {
 
     if (data) {
       setUserPackages(data as unknown as UserPackage[]);
+      // Resolve signed URLs for payment proofs
+      const urls: Record<string, string> = {};
+      await Promise.all(
+        data.filter((pkg: any) => pkg.payment_proof_url).map(async (pkg: any) => {
+          const { data: urlData } = await supabase.storage
+            .from("payment-proofs")
+            .createSignedUrl(pkg.payment_proof_url, 3600);
+          if (urlData?.signedUrl) {
+            urls[pkg.id] = urlData.signedUrl;
+          }
+        })
+      );
+      setSignedUrls(urls);
     }
   };
 
